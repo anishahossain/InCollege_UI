@@ -1,5 +1,6 @@
 // server/server.js
 const express = require("express");
+const profileRoutes = require("./profileRoutes");
 const cors = require("cors");
 const fs = require("fs/promises");
 const path = require("path");
@@ -12,6 +13,7 @@ app.use(express.json());
 const COBOL_DIR = path.join(__dirname, "../cobol");
 const INPUT_PATH = path.join(COBOL_DIR, "InCollege-Input.txt");
 const OUTPUT_PATH = path.join(COBOL_DIR, "InCollege-Output.txt");
+
 
 // Helper: run COBOL with a given sequence of inputs
 async function runCobolWithInputs(lines) {
@@ -123,6 +125,7 @@ app.post("/api/register", async (req, res) => {
     res.status(500).json({ error: "Failed to run COBOL program" });
   }
 });
+app.use("/api", profileRoutes);
 
 
 const PORT = 4000;

@@ -13,7 +13,8 @@
           select input-file assign to 'InCollege-Input.txt'
               organization is line sequential.
           select output-file assign to 'InCollege-Output.txt'
-              organization is line sequential.
+           organization is line sequential
+           file status is ws-output-status.
           select accounts-file assign to 'InCollege-Accounts.txt'
               organization is line sequential
               file status is ws-userdata-status.
@@ -193,9 +194,14 @@
 
 *>    - FILE STATUS AND EOF FLAGS -
       01  ws-userdata-status  pic x(2).
+      01  ws-output-status    pic x(2) value "00".
       01  ws-input-eof        pic a(1) value 'N'.
       88  input-ended         value 'Y'.
       88 input-ok    value "N".
+             01  ws-input-open-flag   pic a(1) value 'N'.
+           88 input-opened      value 'Y'.
+           88 input-not-open    value 'N'.
+
 
       01 ws-json-line       pic x(300).
         01 ws-output-tag      pic x(20).
@@ -206,6 +212,8 @@
       01  ws-last-input     pic x(1000) value spaces.
       01  ws-profile-header        pic x(30) value spaces.
       01  ws-prev-degree            pic x(30).
+
+
 
       01 MAX-ABOUT       pic 9(3) value 200.
       01 MAX-EXP-TITLE   pic 9(3) value 30.
@@ -461,29 +469,9 @@
 
 
       procedure division.
-*>    Open all files that wil be used
+    *>    Open all files that wil be used
       perform initialize-files.
 
-       send-json-output.
-            *> Build line as: TYPE:<TAG>|<MESSAGE>
-            move spaces to ws-json-line
-            string 
-                "TYPE:" function trim(ws-output-tag)
-                "|"     delimited by size
-                function trim(ws-output-text)
-                into ws-json-line
-            end-string
-
-            *> Open output file fresh
-            open output output-file
-
-            *> Write JSON line
-            move ws-json-line to output-record
-            write output-record
-
-            *> Close output file
-            close output-file
-            exit paragraph.
 
 *>    The whole program will run inside this loop that iterates through every line of input until the file ends
       perform main-program-loop until input-ended.
@@ -496,21 +484,25 @@
 
       main-program-loop.
 *>    First, give users the option of 1) logging in or 2) creating an account
-          if at-initial-menu
-              perform display-initial-menu
-              perform read-user-choice
-              if ws-user-choice = '1'
-                  move "LOGIN-SCREEN" to ws-program-state
-              else if ws-user-choice = '2'
-                  move "REGISTER-SCREEN" to ws-program-state
-              else if ws-user-choice = '3'
-                  perform cleanup-files
-                  stop run
-              else   
-                  move "Invalid option. Please try again" to ws-message
-                  perform display-error
-                  move "INITIAL-MENU" to ws-program-state
-              end-if
+            if at-initial-menu
+                perform display-initial-menu
+
+                if ws-user-choice = '1'
+                    move "LOGIN-SCREEN" to ws-program-state
+                else if ws-user-choice = '2'
+                    move "REGISTER-SCREEN" to ws-program-state
+                else if ws-user-choice = '3'
+                    perform cleanup-files
+                    stop run
+                else
+                    move "Invalid option. Please try again" to ws-message
+                    perform display-error
+                    move "INITIAL-MENU" to ws-program-state
+                end-if
+
+            end-if
+
+
 *>    If they choose to log in, prompt for username and password and look them up in the accounts file (must match)
           else if at-login-screen
               move "Please enter your username:" to ws-message
@@ -609,52 +601,81 @@
 
 
       initialize-files.
-    *> Open input file for scripted user commands (written by Node)
-    open input input-file
+        *> DO NOT open input-file here – it’s opened lazily in read-next-input
 
-    *> Reset output file at program start
-    open output output-file
-    close output-file
+        *> (Re)create / truncate output file and KEEP IT OPEN
+        open output output-file
 
-    *> Open accounts file (create if missing)
-    open i-o accounts-file
-    if ws-userdata-status = "35"
-        *> File missing — create a new one
-        open output accounts-file
-        close accounts-file
+        *> Treat "already open" (41) as OK, anything else as fatal
+        if ws-output-status not = "00"
+           and ws-output-status not = "41"
+            move spaces to ws-message
+            string 
+                "FATAL: error opening output-file. STATUS="
+                ws-output-status
+                delimited by size
+                into ws-message
+            end-string
+            perform display-error
+            stop run
+        end-if
+
+
+        *> Open accounts file (create if missing)
         open i-o accounts-file
-    end-if
+        if ws-userdata-status = "35"
+            *> File missing — create a new one
+            open output accounts-file
+            close accounts-file
+            open i-o accounts-file
+        end-if
 
-    if ws-userdata-status not = "00"
-        move "FATAL ERROR opening accounts file. Status: "
-          to ws-message
-        string ws-message ws-userdata-status
-          into ws-message
-        perform display-error
-        stop run
-    end-if
+        if ws-userdata-status not = "00"
+            move "FATAL ERROR opening accounts file. Status: "
+              to ws-message
+            string ws-message ws-userdata-status
+              into ws-message
+            perform display-error
+            stop run
+        end-if
 
-    *> Load accounts into memory
-    perform until accounts-file-ended
-        read accounts-file next record
-            at end
-                set accounts-file-ended to true
-            not at end
-                add 1 to ws-current-account-count
-                move username
-                    to ws-username(ws-current-account-count)
-                move password
-                    to ws-password(ws-current-account-count)
-        end-read
-    end-perform
+        *> Load accounts into memory
+        perform until accounts-file-ended
+            read accounts-file next record
+                at end
+                    set accounts-file-ended to true
+                not at end
+                    add 1 to ws-current-account-count
+                    move username
+                        to ws-username(ws-current-account-count)
+                    move password
+                        to ws-password(ws-current-account-count)
+            end-read
+        end-perform
 
-    close accounts-file
-    exit paragraph.
+        close accounts-file
+        exit paragraph.
+
+      send-json-output.
+        *> Build line as: TYPE:<TAG>|<MESSAGE>
+        move spaces to ws-json-line
+        string 
+            "TYPE:" function trim(ws-output-tag)
+            "|"     delimited by size
+            function trim(ws-output-text)
+            delimited by size
+            into ws-json-line
+        end-string
+
+        *> Just write to output-file (it is already OPEN in initialize-files)
+        move ws-json-line to output-record
+        write output-record
+
+        exit paragraph.
 
 
 
-
-     display-initial-menu.
+       display-initial-menu.
             *> Title
             move "Welcome to InCollege!" to ws-message
             perform display-title
@@ -681,122 +702,122 @@
 
       display-main-menu.
     *> Title
-    move "Main Menu" to ws-message
-    perform display-title
+            move "Main Menu" to ws-message
+            perform display-title
 
-    *> Options
-    move "1. Job Search/Internship" to ws-message
-    perform display-option
+            *> Options
+            move "1. Job Search/Internship" to ws-message
+            perform display-option
 
-    move "2. Find Someone You Know" to ws-message
-    perform display-option
+            move "2. Find Someone You Know" to ws-message
+            perform display-option
 
-    move "3. Learn a New Skill" to ws-message
-    perform display-option
+            move "3. Learn a New Skill" to ws-message
+            perform display-option
 
-    move "4. Create/Edit My Profile" to ws-message
-    perform display-option
+            move "4. Create/Edit My Profile" to ws-message
+            perform display-option
 
-    move "5. View My Profile" to ws-message
-    perform display-option
+            move "5. View My Profile" to ws-message
+            perform display-option
 
-    move "6. View My Pending Connection Requests" to ws-message
-    perform display-option
+            move "6. View My Pending Connection Requests" to ws-message
+            perform display-option
 
-    move "7. View My Network" to ws-message
-    perform display-option
+            move "7. View My Network" to ws-message
+            perform display-option
 
-    move "8. Messages" to ws-message
-    perform display-option
+            move "8. Messages" to ws-message
+            perform display-option
 
-    move "9. Log Out" to ws-message
-    perform display-option
+            move "9. Log Out" to ws-message
+            perform display-option
 
-    move "10. Exit Program" to ws-message
-    perform display-option
+            move "10. Exit Program" to ws-message
+            perform display-option
 
-    *> Prompt
-    move "Enter your choice:" to ws-message
-    perform display-prompt
+            *> Prompt
+            move "Enter your choice:" to ws-message
+            perform display-prompt
 
-    *> read input
-    perform read-next-input
-    exit paragraph.
-
-
+            *> read input
+            perform read-next-input
+            exit paragraph.
 
 
-     display-skills.
-    move "Learn a New Skill" to ws-message
-    perform display-title
 
-    move "1. Time Management" to ws-message
-    perform display-option
 
-    move "2. Professional Communication and Networking" to ws-message
-    perform display-option
+       display-skills.
+            move "Learn a New Skill" to ws-message
+            perform display-title
 
-    move "3. Coding" to ws-message
-    perform display-option
+            move "1. Time Management" to ws-message
+            perform display-option
 
-    move "4. Financial Literacy" to ws-message
-    perform display-option
+            move "2. Professional Communication and Networking" to ws-message
+            perform display-option
 
-    move "5. Physical Wellbeing" to ws-message
-    perform display-option
+            move "3. Coding" to ws-message
+            perform display-option
 
-    move "6. Go Back" to ws-message
-    perform display-option
+            move "4. Financial Literacy" to ws-message
+            perform display-option
 
-    *> Prompt
-    move "Enter your choice:" to ws-message
-    perform display-prompt
+            move "5. Physical Wellbeing" to ws-message
+            perform display-option
 
-    exit paragraph.
+            move "6. Go Back" to ws-message
+            perform display-option
+
+            *> Prompt
+            move "Enter your choice:" to ws-message
+            perform display-prompt
+
+            exit paragraph.
 
 
       display-messages-menu.
-    *> Title
-    move "Messages" to ws-message
-    perform display-title
+        *> Title
+        move "Messages" to ws-message
+        perform display-title
 
-    *> Options
-    move "1. Send a New Message" to ws-message
-    perform display-option
+        *> Options
+        move "1. Send a New Message" to ws-message
+        perform display-option
 
-    move "2. View My Messages" to ws-message
-    perform display-option
+        move "2. View My Messages" to ws-message
+        perform display-option
 
-    move "0. Return to Main Menu" to ws-message
-    perform display-option
+        move "0. Return to Main Menu" to ws-message
+        perform display-option
 
-    *> Prompt
-    move "Enter your choice:" to ws-message
-    perform display-prompt
+        *> Prompt
+        move "Enter your choice:" to ws-message
+        perform display-prompt
 
-    *> Read choice
-    perform read-next-input
-    move function trim(ws-last-input) to ws-user-choice
+        *> Read choice
+        perform read-next-input
+        move function trim(ws-last-input) to ws-user-choice
 
-    *> Handle options
-    if ws-user-choice = "1"
-        perform send-a-message
-        move "MESSAGES-MENU" to ws-program-state
+        *> Handle options
+        if ws-user-choice = "1"
+            perform send-a-message
+            move "MESSAGES-MENU" to ws-program-state
 
-    else if ws-user-choice = "2"
-        perform view-my-messages
-        move "MESSAGES-MENU" to ws-program-state
+        else if ws-user-choice = "2"
+            perform view-my-messages
+            move "MESSAGES-MENU" to ws-program-state
 
-    else if ws-user-choice = "0"
-        move "MAIN-MENU" to ws-program-state
+        else if ws-user-choice = "0"
+            move "MAIN-MENU" to ws-program-state
 
-    else
-        move "Invalid choice. Please try again." to ws-message
-        perform display-error
-        move "MESSAGES-MENU" to ws-program-state
-    end-if
+        else
+            move "Invalid choice. Please try again." to ws-message
+            perform display-error
+            move "MESSAGES-MENU" to ws-program-state
+        end-if
 
-    exit paragraph.
+        exit paragraph.
 
            
       *> ================================================================
@@ -810,102 +831,102 @@
        *>   - Handling "no messages" case
        *> ================================================================
       view-my-messages.
-    move 0 to ws-current-msg-id
-    move 0 to ws-msg-count
+        move 0 to ws-current-msg-id
+        move 0 to ws-msg-count
 
-    *> Title
-    move "Your Received Messages" to ws-message
-    perform display-title
+        *> Title
+        move "Your Received Messages" to ws-message
+        perform display-title
 
-    *> Open messages file
-    open input messages-file
+        *> Open messages file
+        open input messages-file
 
-    evaluate ws-messages-status
-        when "00"
-            continue
-        when "35"
-            *> File doesn't exist
+        evaluate ws-messages-status
+            when "00"
+                continue
+            when "35"
+                *> File doesn't exist
+                move "You have no messages at this time." to ws-message
+                perform display-info
+                close messages-file
+                exit paragraph
+            when other
+                move "Error opening messages file." to ws-message
+                perform display-error
+                close messages-file
+                exit paragraph
+        end-evaluate
+
+        *> Initialize message reading state
+        move 'N' to ws-messages-eof
+        move spaces to ws-current-sender
+        move spaces to ws-timestamp
+        move spaces to ws-rem-text
+
+        *> Loop through messages
+        perform until messages-file-ended
+            read messages-file next record
+                at end
+                    move 'Y' to ws-messages-eof
+
+                    *> Display last accumulated message if any
+                    if ws-current-sender not = spaces
+                        perform display-single-message
+                    end-if
+                not at end
+
+                    *> For current user?
+                    if function upper-case(function trim(msg-recipient))
+                       = function upper-case(function trim(ws-current-username))
+
+                        *> New message?
+                        if msg-id not = ws-current-msg-id
+
+                            *> Display previous accumulated message
+                            if ws-current-sender not = spaces
+                                perform display-single-message
+                            end-if
+
+                            *> Start accumulating a new message
+                            add 1 to ws-msg-count
+                            move msg-id to ws-current-msg-id
+                            move msg-sender to ws-current-sender
+                            move msg-timestamp to ws-timestamp
+                            move msg-text to ws-rem-text
+
+                        else
+                            *> Continuation chunk
+                            string
+                                function trim(ws-rem-text)
+                                function trim(msg-text)
+                                delimited by size
+                                into ws-rem-text
+                            end-string
+                        end-if
+                    end-if
+            end-read
+        end-perform
+
+        close messages-file
+
+        *> Separator (JSON tag)
+        move ws-line-separator to ws-message
+        perform display-info
+
+        *> Summary
+        if ws-msg-count = 0
             move "You have no messages at this time." to ws-message
             perform display-info
-            close messages-file
-            exit paragraph
-        when other
-            move "Error opening messages file." to ws-message
-            perform display-error
-            close messages-file
-            exit paragraph
-    end-evaluate
+        else
+            move spaces to ws-message
+            string
+                "Total Messages: "
+                ws-msg-count
+                into ws-message
+            perform display-info
+        end-if
 
-    *> Initialize message reading state
-    move 'N' to ws-messages-eof
-    move spaces to ws-current-sender
-    move spaces to ws-timestamp
-    move spaces to ws-rem-text
-
-    *> Loop through messages
-    perform until messages-file-ended
-        read messages-file next record
-            at end
-                move 'Y' to ws-messages-eof
-
-                *> Display last accumulated message if any
-                if ws-current-sender not = spaces
-                    perform display-single-message
-                end-if
-            not at end
-
-                *> For current user?
-                if function upper-case(function trim(msg-recipient))
-                   = function upper-case(function trim(ws-current-username))
-
-                    *> New message?
-                    if msg-id not = ws-current-msg-id
-
-                        *> Display previous accumulated message
-                        if ws-current-sender not = spaces
-                            perform display-single-message
-                        end-if
-
-                        *> Start accumulating a new message
-                        add 1 to ws-msg-count
-                        move msg-id to ws-current-msg-id
-                        move msg-sender to ws-current-sender
-                        move msg-timestamp to ws-timestamp
-                        move msg-text to ws-rem-text
-
-                    else
-                        *> Continuation chunk
-                        string
-                            function trim(ws-rem-text)
-                            function trim(msg-text)
-                            delimited by size
-                            into ws-rem-text
-                        end-string
-                    end-if
-                end-if
-        end-read
-    end-perform
-
-    close messages-file
-
-    *> Separator (JSON tag)
-    move ws-line-separator to ws-message
-    perform display-info
-
-    *> Summary
-    if ws-msg-count = 0
-        move "You have no messages at this time." to ws-message
-        perform display-info
-    else
-        move spaces to ws-message
-        string
-            "Total Messages: "
-            ws-msg-count
-            into ws-message
-        perform display-info
-    end-if
-
-    exit paragraph.
+        exit paragraph.
 
        
        *> ================================================================
@@ -1013,17 +1034,29 @@
               move "MAIN-MENU" to ws-program-state
           end-if.
 
-read-next-input.
-    read input-file into ws-user-input
-        at end
-            set input-ended to true
-            move spaces to ws-user-input
-        not at end
-            move ws-user-input to ws-last-input
-    end-read.
+        read-next-input.
+            *> If we've already hit EOF, do nothing – avoid status 46
+            if input-ended
+                move spaces to ws-user-input
+                exit paragraph
+            end-if
 
+            *> Lazily open the input file the first time we need it
+            if input-not-open
+                open input input-file
+                set input-opened to true
+            end-if
 
-    
+            read input-file into ws-user-input
+                at end
+                    set input-ended to true
+                    move spaces to ws-user-input
+                not at end
+                    move ws-user-input to ws-last-input
+            end-read
+
+            exit paragraph.
+
 
 
          read-user-choice.
@@ -3423,7 +3456,9 @@ display-prompt.
 
     cleanup-files.
     close input-file
-    close output-file
+
+    *> DO NOT CLOSE output-file HERE
+    *> Keep it open for entire program execution
 
     open output accounts-file
     perform varying ws-i from 1 by 1
@@ -3436,6 +3471,7 @@ display-prompt.
 
     set input-ended to true
     exit paragraph.
+
 
 
          

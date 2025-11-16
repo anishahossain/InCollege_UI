@@ -1,1 +1,21 @@
-TYPE:ERROR|Invalid option. Please try again
+TYPE:TITLE|Welcome to InCollege!
+TYPE:OPTION|1. Log In
+TYPE:OPTION|2. Create an Account
+TYPE:OPTION|3. Exit Program
+TYPE:PROMPT|Enter your choice:
+TYPE:PROMPT|Please enter your username:
+TYPE:PROMPT|Please enter your password:
+TYPE:SUCCESS|You have successfully logged in.
+TYPE:INFO|Welcome, anisha2!
+TYPE:TITLE|Main Menu
+TYPE:OPTION|1. Job Search/Internship
+TYPE:OPTION|2. Find Someone You Know
+TYPE:OPTION|3. Learn a New Skill
+TYPE:OPTION|4. Create/Edit My Profile
+TYPE:OPTION|5. View My Profile
+TYPE:OPTION|6. View My Pending Connection Requests
+TYPE:OPTION|7. View My Network
+TYPE:OPTION|8. Messages
+TYPE:OPTION|9. Log Out
+TYPE:OPTION|10. Exit Program
+TYPE:PROMPT|Enter your choice:
