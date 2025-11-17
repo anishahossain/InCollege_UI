@@ -1,6 +1,8 @@
 // src/pages/AuthPage.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { login as apiLogin, register as apiRegister } from "../api";
+
 
 export default function AuthPage() {
   const [tab, setTab] = useState("login");
@@ -11,65 +13,57 @@ export default function AuthPage() {
   const navigate = useNavigate();
 
   async function handleLogin(e) {
-    e.preventDefault();
-    setStatus(null);
-    setMsg("");
+  e.preventDefault();
+  setStatus(null);
+  setMsg("");
 
-    try {
-      const res = await fetch("https://incollege-byanisha.onrender.com/api", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+  try {
+    const data = await apiLogin(username, password); // uses /api/login
 
-      const data = await res.json();
-
-      if (data.success) {
-        setStatus("success");
-        navigate("/menu", { state: { username } });
-      } else {
-        setStatus("error");
-        setMsg("Invalid username or password.");
-      }
-    } catch {
+    if (data.success) {
+      setStatus("success");
+      navigate("/menu", { state: { username } });
+    } else {
       setStatus("error");
-      setMsg("Server error. Try again.");
+      setMsg("Invalid username or password.");
     }
+  } catch (err) {
+    console.error("Login error:", err);
+    setStatus("error");
+    setMsg(err.message || "Server error. Try again.");
   }
+}
+
 
   async function handleSignup(e) {
-    e.preventDefault();
-    setStatus(null);
-    setMsg("");
+  e.preventDefault();
+  setStatus(null);
+  setMsg("");
 
-    if (password.length < 8 || password.length > 12) {
-      setStatus("error");
-      setMsg("Password must be 8–12 characters.");
-      return;
-    }
-
-    try {
-      const res = await fetch("https://incollege-byanisha.onrender.com/api", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        setStatus("success");
-        setMsg("Account created successfully! Please log in.");
-        setTab("login");
-      } else {
-        setStatus("error");
-        setMsg("This username is already taken.");
-      }
-    } catch {
-      setStatus("error");
-      setMsg("Server error. Try again.");
-    }
+  if (password.length < 8 || password.length > 12) {
+    setStatus("error");
+    setMsg("Password must be 8–12 characters.");
+    return;
   }
+
+  try {
+    const data = await apiRegister({ username, password }); // uses /api/register
+
+    if (data.success) {
+      setStatus("success");
+      setMsg("Account created successfully! Please log in.");
+      setTab("login");
+    } else {
+      setStatus("error");
+      setMsg("This username is already taken.");
+    }
+  } catch (err) {
+    console.error("Signup error:", err);
+    setStatus("error");
+    setMsg(err.message || "Server error. Try again.");
+  }
+}
+
 
   return (
     <div
