@@ -6,7 +6,7 @@ TYPE:PROMPT|Enter your choice:
 TYPE:PROMPT|Please enter your username:
 TYPE:PROMPT|Please enter your password:
 TYPE:SUCCESS|You have successfully logged in.
-TYPE:INFO|Welcome, anisha2!
+TYPE:INFO|Welcome, friend!
 TYPE:TITLE|Main Menu
 TYPE:OPTION|1. Job Search/Internship
 TYPE:OPTION|2. Find Someone You Know

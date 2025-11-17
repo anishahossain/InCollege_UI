@@ -235,7 +235,7 @@ export default function ProfileEditPage() {
           padding: "2rem",
         }}
       >
-        <h1 style={{ fontSize: "1.8rem", marginBottom: "0.25rem", color: "#C3E7E6" }}>
+        <h1 style={{ fontFamily: "'Anton', sans-serif", fontSize: "1.8rem", marginBottom: "0.25rem", color: "#C3E7E6" }}>
           Create / Edit My Profile
         </h1>
         <p style={{ opacity: 0.8, marginBottom: "1.5rem" }}>
@@ -507,7 +507,7 @@ export default function ProfileEditPage() {
           >
             <button
               type="button"
-              onClick={() => navigate("/menu", { state: { username } })}
+              onClick={() => navigate("/jobs", { state: { username } })}
               style={{
                 padding: "0.7rem 1.2rem",
                 borderRadius: "999px",

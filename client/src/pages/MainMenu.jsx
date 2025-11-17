@@ -1,5 +1,7 @@
 // client/src/pages/MainMenu.jsx
 import { useLocation, useNavigate } from "react-router-dom";
+import "./MainMenu.css";
+
 
 export default function MainMenu() {
   const location = useLocation();
@@ -36,7 +38,7 @@ export default function MainMenu() {
       >
         <span
           style={{
-            fontFamily: '"Anton", sans-serif',
+            fontFamily: "'Anton', sans-serif",
             fontSize: "2rem",
             letterSpacing: "0.12em",
           }}
@@ -56,7 +58,7 @@ export default function MainMenu() {
           margin: "0 auto",
         }}
       >
-        <h1 style={{ fontSize: "1.8rem" }}>Welcome, {username} 👋</h1>
+        <h1 style={{ fontSize: "1.8rem", fontFamily: "'Anton', sans-serif", }}>Welcome, {username} 👋</h1>
 
         <p style={{ opacity: 0.8 }}>
           Choose an option from the InCollege main menu:
@@ -69,28 +71,62 @@ export default function MainMenu() {
             gap: "1rem",
           }}
         >
-          <button style={menuButtonStyle}>Job/Internship</button>
-          <button style={menuButtonStyle}>Find Someone You Know</button>
           <button
-            style={menuButtonStyle}
+  className="menu-btn"
+  onClick={() => navigate("/jobs", { state: { username } })}
+>
+  Jobs / Internships
+</button>
+
+
+          <button
+  className="menu-btn"
+  onClick={() => navigate("/find-someone", { state: { username } })}
+>
+  Find Someone You Know
+</button>
+
+          <button
+            className="menu-btn"
             onClick={() => navigate("/profile", { state: { username } })}
           >
             Create / Edit My Profile
           </button>
           <button
-            style={menuButtonStyle}
+            className="menu-btn"
             onClick={() => navigate("/profile/view", { state: { username } })} // ⬅️ NEW
             >
             View My Profile
         </button>
-          <button style={menuButtonStyle}>Pending Connection Requests</button>
-          <button style={menuButtonStyle}>View My Network</button>
-          <button style={menuButtonStyle}>Direct Messaging</button>
+          <button
+        className="menu-btn"
+        onClick={() =>
+          navigate("/connections/pending", { state: { username } })
+        }
+      >
+        View my pending connection requests
+      </button>
+          <button
+        className="menu-btn"
+        onClick={() =>
+          navigate("/connections/network", { state: { username } })
+        }
+      >
+        View my network
+      </button>
+      <button
+        className="menu-btn"
+        onClick={() =>
+          navigate("/messages", { state: { username } })
+        }
+      >
+        Direct Messaging
+      </button>
         </div>
 
-        <button
+        <button className="menu-btn"
           onClick={handleLogout}
-          style={{ ...menuButtonStyle, marginTop: "1rem", maxWidth: "200px" }}
+          style={{ marginTop: "1rem", maxWidth: "200px" }}
         >
           Log Out
         </button>
@@ -98,15 +134,3 @@ export default function MainMenu() {
     </div>
   );
 }
-
-const menuButtonStyle = {
-  padding: "0.9rem 1rem",
-  borderRadius: "0.9rem",
-  border: "1px solid #1f2937",
-  background:
-    "radial-gradient(circle at top left, rgba(56,189,248,0.12), #020617 60%)",
-  color: "#e5e7eb",
-  textAlign: "left",
-  cursor: "pointer",
-  fontSize: "0.95rem",
-};

@@ -271,11 +271,11 @@
           
 *>    - ACCOUNT DATA - We keep a copy of the accounts file locally at runtime for faster access instead of reading the file everytime (simply for good practice)
       01  ws-account-table.
-          05  ws-user-account     occurs 5 times.
+          05  ws-user-account     occurs 55 times.
               10  ws-username         pic x(20).
               10  ws-password         pic x(12).
-      01  ws-current-account-count    pic 9 value 0.
-      01  ws-max-accounts             pic 9 value 5.
+      01  ws-current-account-count    pic 99 value 0.
+      01  ws-max-accounts             pic 99 value 55.
       01  ws-account-found            pic a(1) value 'N'.
           88  account-found            value 'Y'.
       01  ws-validation-passed       pic a(1) value 'N'.

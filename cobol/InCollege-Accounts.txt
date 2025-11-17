@@ -1,2 +1,3 @@
 anisha              Anisha@123
 anisha2             Anisha@1234
+friend              Friend@123
