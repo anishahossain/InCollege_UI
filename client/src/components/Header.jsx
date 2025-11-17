@@ -1,3 +1,4 @@
+// client/src/components/Header.jsx
 export default function Header({ onBack }) {
   return (
     <header

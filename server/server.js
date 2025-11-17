@@ -97,7 +97,7 @@ function parseMessageRecord(line) {
 
 async function getNextMessageId() {
   try {
-    const content = await fs.promises.readFile(MESSAGES_FILE, "utf8");
+    const content = await fs.readFile(MESSAGES_FILE, "utf8");
     const lines = content.split(/\r?\n/).filter((l) => l.trim() !== "");
     let maxId = 0;
     for (const line of lines) {
@@ -122,7 +122,7 @@ async function areConnected(userA, userB) {
   const b = userB.trim().toUpperCase();
 
   try {
-    const content = await fs.promises.readFile(CONNECTIONS_FILE, "utf8");
+    const content = await fs.readFile(CONNECTIONS_PATH, "utf8");
     const lines = content.split(/\r?\n/).filter((l) => l.trim() !== "");
 
     for (const line of lines) {
@@ -195,7 +195,7 @@ async function appendMessage({ sender, recipient, text }) {
     })
     .join("");
 
-  await fs.promises.appendFile(MESSAGES_FILE, lines, "utf8");
+  await fs.appendFile(MESSAGES_FILE, lines, "utf8");
 }
 
 
