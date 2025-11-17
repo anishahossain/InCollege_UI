@@ -3,6 +3,31 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login as apiLogin, register as apiRegister } from "../api";
 
+function extractCobolMessage(rawOutput) {
+  if (!rawOutput) return null;
+
+  const lines = rawOutput
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  for (let i = lines.length - 1; i >= 0; i -= 1) {
+    const line = lines[i];
+    if (!line.startsWith("TYPE:")) continue;
+
+    const [typePart, ...messageParts] = line.split("|");
+    if (messageParts.length === 0) continue;
+
+    const tag = typePart.slice(5).trim().toUpperCase(); // remove "TYPE:"
+    if (!["ERROR", "INFO", "SUCCESS"].includes(tag)) continue;
+
+    const message = messageParts.join("|").trim();
+    if (message) return message;
+  }
+
+  return null;
+}
+
 
 export default function AuthPage() {
   const [tab, setTab] = useState("login");
@@ -55,7 +80,10 @@ export default function AuthPage() {
       setTab("login");
     } else {
       setStatus("error");
-      setMsg("This username is already taken.");
+      const serverMsg =
+        extractCobolMessage(data.rawOutput) ||
+        "Account could not be created. Please try a different username or password.";
+      setMsg(serverMsg);
     }
   } catch (err) {
     console.error("Signup error:", err);
