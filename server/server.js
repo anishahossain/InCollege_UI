@@ -7,7 +7,20 @@ const path = require("path");
 const { execFile } = require("child_process");
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", // your dev environment
+      "https://in-college-3ww36mxv0-anishahossains-projects.vercel.app", // your Vercel site
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
+
+// handle preflight requests
+app.options("*", cors());
+
 app.use(express.json());
 
 const COBOL_DIR = path.join(__dirname, "../cobol");
