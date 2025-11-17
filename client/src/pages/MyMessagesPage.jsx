@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Header from "../components/Header";
 
-const API_BASE = "http://localhost:4000/api";
+const API_BASE = "https://incollege-byanisha.onrender.com/api";
 
 export default function MyMessagesPage() {
   const location = useLocation();

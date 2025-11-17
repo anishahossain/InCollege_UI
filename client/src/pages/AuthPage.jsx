@@ -16,7 +16,7 @@ export default function AuthPage() {
     setMsg("");
 
     try {
-      const res = await fetch("http://localhost:4000/api/login", {
+      const res = await fetch("https://incollege-byanisha.onrender.com/api", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -49,7 +49,7 @@ export default function AuthPage() {
     }
 
     try {
-      const res = await fetch("http://localhost:4000/api/register", {
+      const res = await fetch("https://incollege-byanisha.onrender.com/api", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
