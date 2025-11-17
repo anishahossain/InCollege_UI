@@ -31,16 +31,31 @@ export default function SentMessagesPage() {
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "0 24px"
       }}>
-        <h1>InCollege</h1>
-        <span>Logged in as {username}</span>
+        <h1 style={{fontFamily: "'Anton', sans-serif",
+          fontSize: "2rem",
+          letterSpacing: "2px",
+          margin: 0,
+          color: "#000413",}}>InCollege</h1>
+        <span style={{fontFamily: "'Anton', sans-serif",
+          fontSize: "1.3rem",
+          letterSpacing: "0.08px",
+          margin: 0,
+          color: "#000413",}}>Logged in as {username}</span>
       </header>
 
-      <main style={{ maxWidth: "800px", margin: "0 auto", padding: "24px" }}>
-        <h2>Messages You Sent</h2>
+      <main style={{ maxWidth: "800px", margin: "0 auto", padding: "24px", }}>
+        <h2 style={{ fontFamily: "'Anton', sans-serif", color: "#b1e8f5ff" }}
+        >Messages You Sent</h2>
 
         <button
           onClick={() => navigate("/messages", { state: { username } })}
-          style={{ marginBottom: "16px" }}
+          style={{  padding: "0.7rem 1.4rem",
+    borderRadius: "999px",
+    fontWeight: 600,
+    fontSize: "0.9rem",
+  background: "#020617",
+                  color: "#f9fafb",
+                  border: "1px solid #4b5563", }}
         >
           Back
         </button>
