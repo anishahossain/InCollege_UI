@@ -1,5 +1,5 @@
 // client/src/api.js
-const BASE_URL = "http://localhost:4000";
+const BASE_URL = "https://incollege-byanisha.onrender.com";
 
 async function handleJson(res) {
   const data = await res.json().catch(() => ({}));
