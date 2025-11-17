@@ -224,46 +224,78 @@ export default function AuthPage() {
 
           {/* LOGIN FORM */}
           {tab === "login" && (
-            <form style={{ display: "grid", gap: "0.75rem" }} onSubmit={handleLogin}>
-              <input
-                value={username}
-                placeholder="Username"
-                onChange={(e) => setUsername(e.target.value)}
-                style={inputStyle}
-              />
-              <input
-                value={password}
-                type="password"
-                placeholder="Password"
-                onChange={(e) => setPassword(e.target.value)}
-                style={inputStyle}
-              />
-              <button type="submit" style={buttonStyle}>
-                Log In
-              </button>
-            </form>
+            <>
+              <form style={{ display: "grid", gap: "0.75rem" }} onSubmit={handleLogin}>
+                <input
+                  value={username}
+                  placeholder="Username"
+                  onChange={(e) => setUsername(e.target.value)}
+                  style={inputStyle}
+                />
+                <input
+                  value={password}
+                  type="password"
+                  placeholder="Password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={inputStyle}
+                />
+                <button type="submit" style={buttonStyle}>
+                  Log In
+                </button>
+              </form>
+              <div style={infoBoxStyle}>
+                <p style={{ margin: 0, fontWeight: 600, color: "#f8fafc" }}>New to InCollege?</p>
+                <p style={{ margin: "0.35rem 0 0" }}>
+                  You must create your account first on the Sign Up tab. Once it is created, come back here
+                  and sign in with the exact same username and password.
+                </p>
+              </div>
+            </>
           )}
 
           {/* SIGNUP FORM */}
           {tab === "signup" && (
-            <form style={{ display: "grid", gap: "0.75rem" }} onSubmit={handleSignup}>
-              <input
-                value={username}
-                placeholder="Create a username"
-                onChange={(e) => setUsername(e.target.value)}
-                style={inputStyle}
-              />
-              <input
-                value={password}
-                type="password"
-                placeholder="Create a password"
-                onChange={(e) => setPassword(e.target.value)}
-                style={inputStyle}
-              />
-              <button type="submit" style={buttonStyle}>
-                Create Account
-              </button>
-            </form>
+            <>
+              <form style={{ display: "grid", gap: "0.75rem" }} onSubmit={handleSignup}>
+                <input
+                  value={username}
+                  placeholder="Create a username"
+                  onChange={(e) => setUsername(e.target.value)}
+                  style={inputStyle}
+                />
+                <input
+                  value={password}
+                  type="password"
+                  placeholder="Create a password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  style={inputStyle}
+                />
+                <button type="submit" style={buttonStyle}>
+                  Create Account
+                </button>
+              </form>
+              <div style={infoBoxStyle}>
+                <p style={{ margin: 0, color: "#f8fafc" }}>
+                  Please do not try to make multiple accounts with the same username.
+                </p>
+                <p style={{ margin: "0.5rem 0 0", fontWeight: 600, color: "#e0f2fe" }}>Password requirements</p>
+                <ul
+                  style={{
+                    margin: "0.35rem 0 0",
+                    paddingLeft: "1.2rem",
+                    color: "#e2e8f0",
+                    fontSize: "0.85rem",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  <li>8–12 characters long</li>
+                  <li>At least one uppercase letter</li>
+                  <li>At least one lowercase letter</li>
+                  <li>At least one number</li>
+                  <li>At least one special character (!@#$%^&*())</li>
+                </ul>
+              </div>
+            </>
           )}
 
           {/* STATUS */}
@@ -310,5 +342,17 @@ const buttonStyle = {
   color: "#022c22",
   fontWeight: 600,
   cursor: "pointer",
+  fontFamily: "Epilogue, sans-serif",
+};
+
+const infoBoxStyle = {
+  marginTop: "1rem",
+  padding: "0.85rem 1rem",
+  borderRadius: "0.85rem",
+  border: "1px solid rgba(148,163,184,0.35)",
+  background: "rgba(148,163,184,0.08)",
+  fontSize: "0.85rem",
+  lineHeight: 1.5,
+  color: "#cbd5f5",
   fontFamily: "Epilogue, sans-serif",
 };
