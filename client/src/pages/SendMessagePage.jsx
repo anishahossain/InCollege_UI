@@ -2,7 +2,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-const API_BASE = "https://incollege-byanisha.onrender.com/api";
+const API_BASE = "https://incollege-ui-byanishahossain.onrender.com/api";
 
 export default function SendMessagePage() {
   const location = useLocation();

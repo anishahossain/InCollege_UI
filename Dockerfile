@@ -1,32 +1,24 @@
-# Use official Node + Debian image
-FROM node:20-bullseye
+# Use Debian Bookworm (GnuCOBOL available on ARM64)
+FROM node:20-bookworm
 
-# Install GnuCOBOL
+# Install GnuCOBOL compiler & runtime
 RUN apt-get update && \
-    apt-get install -y open-cobol && \
+    apt-get install -y gnucobol && \
     rm -rf /var/lib/apt/lists/*
 
-# Workdir for the app
+# Set working directory
 WORKDIR /app
 
-# Copy everything into the container
+# Copy project files
 COPY . .
 
-# Compile the COBOL program into a Linux binary
-# Adjust filename if yours is different
+# Compile COBOL program into Linux binary
 RUN cd cobol && cobc -x -free -o incollege InCollege.cob
 
 # Install backend dependencies
 RUN cd server && npm install
 
-# Set working dir for the server
+# Run the Node server
 WORKDIR /app/server
-
-# Environment (not strictly necessary, but nice to have)
-ENV NODE_ENV=production
-
-# Expose port (Render still uses $PORT, but this is a hint)
-EXPOSE 4000
-
-# Start the Node server
+EXPOSE 10000
 CMD ["node", "server.js"]

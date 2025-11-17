@@ -13,45 +13,45 @@
           select input-file assign to 'InCollege-Input.txt'
               organization is line sequential.
           select output-file assign to 'InCollege-Output.txt'
-           organization is line sequential
+           organization is sequential
            file status is ws-output-status.
           select accounts-file assign to 'InCollege-Accounts.txt'
-              organization is line sequential
+              organization is sequential
               file status is ws-userdata-status.
 *>    A - New file creation for each user linked by username
           select profiles-file assign to 'InCollege-Profiles.txt'
-              organization is line sequential
+              organization is sequential
               file status is ws-profiles-status.
 *>    temp file used for atomic profile updates
           select temp-profiles-file assign to 'InCollege-Profiles.tmp'
-              organization is line sequential
+              organization is sequential
               file status is ws-profiles-status.
 
    *> Pending requests (sender -> recipient)
           select pending-requests-file assign to 'InCollege-PendingRequests.txt'
-                organization is line sequential
+                organization is sequential
                 file status is ws-requests-status.
 *>    Established connections (userA <-> userB).  Used only for validation.
           select connections-file assign to 'InCollege-Connections.txt'
-                organization is line sequential
+                organization is sequential
                 file status is ws-connections-status.
 *>    temp file for pending requests update (atomic remove)   
           select temp-pending-file assign to 'InCollege-PendingRequests.tmp'
-            organization is line sequential
+            organization is sequential
             file status is ws-temp-status.
 
 *>    Jobs file for storing job postings
           select jobs-file assign to 'InCollege-Jobs.txt'
-            organization is line sequential
+            organization is sequential
             file status is ws-jobs-status.
 
 *>    Applications file for storing who applied to which job
           select applications-file assign to 'InCollege-Applications.txt'
-            organization is line sequential
+            organization is sequential
             file status is ws-app-status.
 *>    To store messages
          select messages-file assign to 'InCollege-Messages.txt'
-               organization is line sequential
+               organization is sequential
                file status is ws-messages-status.
 
 
